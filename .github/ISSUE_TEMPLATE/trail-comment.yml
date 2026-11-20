@@ -1,0 +1,26 @@
+name: Trail comment
+description: Tell us about a trail - walked it, found a problem, or know a better line
+title: "[T__] "
+labels: ["trail-comment"]
+body:
+  - type: dropdown
+    id: trail
+    attributes:
+      label: Which trail?
+      options: [T01, T02, T03, T04, T05, T06, T07, T08, T09, T10, T11, T12, T13, Several / general, A new trail idea]
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of comment?
+      options: [I walked it - it works, Path is blocked or closed, Line is in the wrong place, Missing path or shortcut, Safety concern, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: detail
+    attributes:
+      label: Details
+      description: Where on the trail, what you saw, and when. Please do not post personal phone numbers or home addresses.
+    validations:
+      required: true

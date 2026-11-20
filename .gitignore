@@ -1,0 +1,10 @@
+# tile/imagery cache and raw pulls (third-party imagery, not redistributable)
+data/*
+!data/trails.json
+__pycache__/
+.ruff_cache/
+.lean-harness/
+.DS_Store
+.env
+*.pem
+*.key

@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Durpin Dara Nature Walks</title>
+<style>/*__MAPLIBRE_CSS__*/</style>
+<style>
+:root{--paper:#fdfcf8;--ink:#16212E;--mute:#5b6878;--line:#e3e0d6;--blue:#1f6feb;--amber:#fff4d6;--amberline:#e2b93b}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+#map{position:fixed;inset:0 0 0 360px}
+#side{position:fixed;left:0;top:0;bottom:0;width:360px;background:var(--paper);border-right:1px solid var(--line);overflow-y:auto;padding:16px 14px 24px;z-index:5}
+body.collapsed #side{transform:translateX(-360px)}
+body.collapsed #map{left:0}
+#toggle{position:fixed;left:368px;top:10px;z-index:6;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+body.collapsed #toggle{left:10px}
+h1{font-size:20px;margin:0 0 2px;letter-spacing:-.01em}
+.sub{color:var(--mute);font-size:13px;margin:0 0 12px;line-height:1.4}
+.legend{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;margin-bottom:10px;background:#fff}
+.legend div{display:flex;align-items:center;gap:8px;margin:3px 0}
+.legend svg{flex:none}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+button,select{font:inherit;font-size:12.5px;color:var(--ink);background:#fff;border:1px solid #cfcbbd;border-radius:6px;padding:5px 9px;cursor:pointer}
+button:hover{border-color:var(--blue)}
+button.on,button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.card{border:1px solid var(--line);border-radius:10px;background:#fff;margin:8px 0;padding:10px 11px;cursor:pointer}
+.card.sel{border-color:var(--blue);box-shadow:0 0 0 2px rgba(31,111,235,.15);cursor:default}
+.card h3{font-size:14.5px;margin:0;display:flex;gap:8px;align-items:center}
+.sw{width:14px;height:14px;border-radius:50%;border:2px solid #16212E;flex:none}
+.id{color:var(--mute);font-weight:500;font-size:12px}
+.theme{color:var(--mute);font-size:12.5px;margin:2px 0 6px 22px}
+.stats{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;margin-left:22px}
+.stats b{font-weight:600}
+.g{border-radius:4px;padding:0 6px;font-size:11.5px;font-weight:600}
+.g.Easy{background:#dff3e2;color:#17602a}.g.Moderate{background:#e2ecfb;color:#134a9c}.g.Strenuous{background:#ffe8cf;color:#8a4a00}.g.Expedition{background:#fde0e0;color:#8f1d1d}
+.bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin:7px 0 0 22px;background:#eee}
+.bar i{display:block;height:100%}.bar .o{background:#16212E}.bar .m{background:#d6336c}.bar .s{background:repeating-linear-gradient(90deg,#f0a500 0 4px,#fff 4px 7px)}
+.barkey{font-size:11px;color:var(--mute);margin:3px 0 0 22px}
+.more{display:none;margin-top:10px;font-size:13px;line-height:1.5}
+.card.sel .more{display:block}
+.more ul,.more ol{margin:4px 0 8px;padding-left:20px}
+.caution{background:var(--amber);border:1px solid var(--amberline);border-radius:6px;padding:6px 8px;margin:6px 0}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin-top:8px}
+.foot{font-size:11.5px;color:var(--mute);line-height:1.5;margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+#profile{position:fixed;left:372px;right:12px;bottom:28px;height:150px;background:rgba(253,252,248,.95);border:1px solid var(--line);border-radius:10px;z-index:4;display:none}
+body.collapsed #profile{left:12px}
+#profile canvas{width:100%;height:100%;display:block;cursor:crosshair}
+#ptip{position:absolute;top:6px;right:10px;font-size:12px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:5px;padding:2px 7px}
+#hud{position:fixed;top:10px;left:calc(360px + (100vw - 360px)/2);transform:translateX(-50%);background:rgba(253,252,248,.95);border:1px solid var(--line);border-radius:10px;padding:7px 14px;font-size:13px;z-index:4;display:none;text-align:center;max-width:70vw}
+body.collapsed #hud{left:50%}
+#hud b{font-size:14px}#hud .k{font-weight:600}
+#hud .k.osm{color:#16212E}#hud .k.img{color:#b0204f}#hud .k.scout{color:#9a6400}
+#toast{position:fixed;right:12px;top:12px;background:#b42318;color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;z-index:9;display:none;max-width:50vw}
+.poi{display:flex;align-items:center;gap:4px;cursor:pointer}
+.poi i{width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #16212E;flex:none}
+.poi span{display:none;font-size:11.5px;font-weight:600;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000,0 1px 2px #000;white-space:nowrap}
+#map.labels .poi span,#map .poi.hub span{display:inline}
+.poi.hub i{background:#fff;width:14px;height:14px;border-color:#1f6feb}.poi.heritage i{background:#e63946}.poi.view i{background:#ffd23f}
+.poi.open i{background:#80ed99}.poi.village i{background:#ff9f1c}.poi.water i{background:#4cc9f0}.poi.junction i{background:#b8c0cc;width:8px;height:8px}
+.dot{width:18px;height:18px;border-radius:50%;background:#fff;border:5px solid #1f6feb;box-shadow:0 0 0 2px rgba(0,0,0,.5)}
+.maplibregl-popup-content{font-family:inherit;font-size:13px;color:var(--ink);background:var(--paper);border-radius:8px;max-width:260px}
+.maplibregl-popup-content a{color:var(--blue);display:block;margin-top:4px}
+.mapbtns{position:fixed;right:12px;top:150px;z-index:4;display:flex;flex-direction:column;gap:6px}
+@media (max-width:760px){
+  #side{top:auto;right:0;width:auto;height:45vh;border-right:0;border-top:1px solid var(--line)}
+  #map{inset:0 0 45vh 0}
+  body.collapsed #side{transform:translateY(45vh)}body.collapsed #map{bottom:0}
+  #toggle{left:10px;top:10px}
+  #profile{left:8px;right:8px;bottom:calc(45vh + 8px);height:110px}body.collapsed #profile{bottom:28px}
+  #hud{left:50%;top:48px;max-width:92vw}
+  .mapbtns{top:auto;bottom:calc(45vh + 130px)}
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<button id="toggle">Hide panel</button>
+<div id="side">
+  <h1>Durpin Dara Nature Walks</h1>
+  <p class="sub" id="subtitle"></p>
+  <div class="legend">
+    <div><svg width="46" height="8"><line x1="0" y1="4" x2="46" y2="4" stroke="#16212E" stroke-width="4"/></svg>Mapped path or road (OpenStreetMap)</div>
+    <div><svg width="46" height="8"><line x1="2" y1="4" x2="46" y2="4" stroke="#d6336c" stroke-width="4" stroke-dasharray="0.1 7" stroke-linecap="round"/></svg>Seen on satellite imagery</div>
+    <div><svg width="46" height="8"><line x1="0" y1="4" x2="46" y2="4" stroke="#f0a500" stroke-width="4" stroke-dasharray="8 6"/></svg>Scout line, must be walked first</div>
+  </div>
+  <div class="row"><button id="showall">Show all</button><button id="tour" class="primary">Tour all trails</button></div>
+  <div class="row" id="chips"></div>
+  <div id="cards"></div>
+  <div class="foot">Planning aid, not a survey. Mapped lines come from OpenStreetMap (ODbL, fetched 20 Nov 2026). Imagery lines were read by eye from Esri World Imagery and are good to about 20 m. Scout lines are computed from a 30 m elevation model and must be walked and confirmed before any guest uses them. A missing path means unmapped, not absent. The walk-through is a low flight over satellite imagery draped on terrain, not street-level photography. <a href="https://github.com/Dtensor/kalimpong-trails/issues/new/choose" target="_blank" rel="noopener">Leave a comment or correction</a>.</div>
+</div>
+<div class="mapbtns"><button id="b3d">2D view</button><button id="bbase">Topo map</button></div>
+<div id="hud"></div>
+<div id="profile"><canvas></canvas><div id="ptip">Hover the profile</div></div>
+<div id="toast"></div>
+<script>/*__MAPLIBRE_JS__*/</script>
+<script>
+window.__ERRS = [];
+function showErr(m){ __ERRS.push(String(m)); const t = document.getElementById('toast'); t.textContent = __ERRS.slice(-2).join(' | '); t.style.display = 'block'; }
+window.onerror = (m) => showErr(m);
+window.addEventListener('unhandledrejection', (e) => showErr(e.reason && e.reason.message || e.reason));
+
+const DATA = __DATA_JSON__;
+const $ = (id) => document.getElementById(id);
+const KIND = { osm: 'Mapped', img: 'Seen on imagery', scout: 'Scout line' };
+const R = 6371008.8, rad = Math.PI / 180;
+const hav = (a, b) => { const dl = (b.lat - a.lat) * rad, dn = (b.lng - a.lng) * rad; const h = Math.sin(dl / 2) ** 2 + Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+const mobile = () => innerWidth <= 760;
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---- flatten each trail into one track with cumulative distance
+for (const t of DATA.trails) {
+  const tr = [];
+  t.legs.forEach((leg, li) => leg.pts.forEach((p) => {
+    const q = { lat: p[0], lng: p[1], ele: p[2], kind: leg.kind, li };
+    const last = tr[tr.length - 1];
+    if (last && hav(last, q) < 0.5) return;
+    q.d = last ? last.d + hav(last, q) : 0;
+    tr.push(q);
+  }));
+  t.track = tr; t.total = tr[tr.length - 1].d;
+  t.stops.forEach((s) => { let best = 0, bd = 1e9; tr.forEach((q, i) => { const d = hav(q, { lat: s.lat, lng: s.lon }); if (d < bd) { bd = d; best = i; } }); s.d = tr[best].d; });
+  t.stopsByD = [...t.stops].sort((a, b) => a.d - b.d);
+}
+function at(t, d) {
+  const tr = t.track;
+  if (d <= 0 || d >= t.total) {           // extrapolate along the end heading
+    const a = d <= 0 ? tr[0] : tr[tr.length - 1];
+    const b = d <= 0 ? at(t, Math.min(60, t.total)) : at(t, Math.max(0, t.total - 60));
+    const over = d <= 0 ? -d : d - t.total, span = Math.max(1, hav(a, b)), f = -over / span;
+    return { lat: a.lat + (b.lat - a.lat) * f, lng: a.lng + (b.lng - a.lng) * f, ele: a.ele, kind: a.kind, d };
+  }
+  let lo = 0, hi = tr.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (tr[m].d <= d) lo = m; else hi = m; }
+  const a = tr[lo], b = tr[hi], f = (d - a.d) / Math.max(1e-6, b.d - a.d);
+  return { lat: a.lat + (b.lat - a.lat) * f, lng: a.lng + (b.lng - a.lng) * f, ele: a.ele + (b.ele - a.ele) * f, kind: b.kind, d, grade: (b.ele - a.ele) / Math.max(1, b.d - a.d) };
+}
+
+// ---- map
+const SAT = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const DEMURL = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+const demSrc = () => ({ type: 'raster-dem', tiles: [DEMURL], encoding: 'terrarium', tileSize: 256, maxzoom: 14 });
+const map = new maplibregl.Map({
+  container: 'map', center: [DATA.center[1], DATA.center[0]], zoom: 13.6, pitch: 55, bearing: -20, maxPitch: 85,
+  style: {
+    version: 8,
+    sources: {
+      sat: { type: 'raster', tiles: [SAT], tileSize: 256, maxzoom: 18, attribution: 'Imagery: Esri, Maxar, Earthstar Geographics' },
+      topo: { type: 'raster', tiles: ['https://a.tile.opentopomap.org/{z}/{x}/{y}.png'], tileSize: 256, maxzoom: 17, attribution: 'OpenTopoMap (CC-BY-SA), OpenStreetMap contributors' },
+      dem: demSrc(), dem2: demSrc(),
+    },
+    layers: [
+      { id: 'sat', type: 'raster', source: 'sat' },
+      { id: 'topo', type: 'raster', source: 'topo', layout: { visibility: 'none' } },
+      { id: 'hs', type: 'hillshade', source: 'dem2', paint: { 'hillshade-exaggeration': 0.22, 'hillshade-shadow-color': '#0b1a2a' } },
+    ],
+    sky: { 'sky-color': '#9fc6ee', 'horizon-color': '#e6eef5', 'fog-color': '#dfe8ee', 'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.6, 'fog-ground-blend': 0.2, 'atmosphere-blend': 0.6 },
+  },
+});
+map.on('error', (e) => showErr(e && e.error && e.error.message || 'map error'));
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
+map.addControl(new maplibregl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true }), 'top-right');
+
+let SEL = null, FILTER = 'All';
+const S = { mode: null, s: 0, playing: false, speed: 1, last: 0, cam: null, tgt: null, tour: false, raf: 0 };
+const dot = new maplibregl.Marker({ element: Object.assign(document.createElement('div'), { className: 'dot' }), opacityWhenCovered: '1' });
+const trail = (id) => DATA.trails.find((t) => t.id === id);
+
+map.on('load', () => {
+  map.setTerrain({ source: 'dem', exaggeration: 1 });
+  const ring = []; const [clat, clon] = DATA.center;
+  for (let i = 0; i <= 120; i++) { const a = i / 60 * Math.PI; ring.push([clon + DATA.radius_km / (111.32 * Math.cos(clat * rad)) * Math.sin(a), clat + DATA.radius_km / 110.57 * Math.cos(a)]); }
+  map.addSource('ring', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: ring }, properties: {} } });
+  map.addLayer({ id: 'ring', type: 'line', source: 'ring', paint: { 'line-color': '#ff4fd8', 'line-width': 1.5, 'line-dasharray': [3, 3], 'line-opacity': 0.8 } });
+  const feats = [];
+  for (const t of [...DATA.trails].reverse()) t.legs.forEach((leg) => feats.push({ type: 'Feature', properties: { tid: t.id, kind: leg.kind, color: t.color, grade: t.grade }, geometry: { type: 'LineString', coordinates: leg.pts.map((p) => [p[1], p[0]]) } }));
+  map.addSource('legs', { type: 'geojson', data: { type: 'FeatureCollection', features: feats } });
+  const dash = { osm: null, img: [0.2, 1.7], scout: [2, 1.6] };
+  for (const k of ['osm', 'scout', 'img']) {
+    map.addLayer({ id: 'case-' + k, type: 'line', source: 'legs', filter: ['==', ['get', 'kind'], k], layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#0b1220', 'line-width': 7 } });
+  }
+  for (const k of ['osm', 'scout', 'img']) {
+    const paint = { 'line-color': ['get', 'color'], 'line-width': 4 };
+    if (dash[k]) paint['line-dasharray'] = dash[k];
+    map.addLayer({ id: 'leg-' + k, type: 'line', source: 'legs', filter: ['==', ['get', 'kind'], k], layout: { 'line-cap': k === 'scout' ? 'butt' : 'round', 'line-join': 'round' }, paint });
+  }
+  map.addLayer({ id: 'hit', type: 'line', source: 'legs', paint: { 'line-color': '#000', 'line-width': 18, 'line-opacity': 0.01 } });
+  map.on('click', 'hit', (e) => { const f = e.features.find((x) => x.properties.tid === SEL) || e.features[0]; select(f.properties.tid); });
+  map.on('mouseenter', 'hit', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'hit', () => map.getCanvas().style.cursor = '');
+  for (const p of DATA.pois) {
+    const el = document.createElement('div'); el.className = 'poi ' + p.kind; el.innerHTML = '<i></i><span></span>'; el.lastChild.textContent = p.name;
+    const sv = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${p.lat},${p.lon}`;
+    const gm = `https://www.google.com/maps/@?api=1&map_action=map&center=${p.lat},${p.lon}&zoom=19&basemap=satellite`;
+    const pop = new maplibregl.Popup({ offset: 12 }).setHTML(`<b></b><div>${p.elev} m, position from ${p.src === 'osm' ? 'OpenStreetMap' : 'satellite imagery'}</div><div class="n"></div><a target="_blank" rel="noopener" href="${sv}">Street View here (if Google has coverage)</a><a target="_blank" rel="noopener" href="${gm}">Open in Google Maps satellite</a>`);
+    pop.on('open', () => { const c = pop.getElement(); c.querySelector('b').textContent = p.name; c.querySelector('.n').textContent = p.note; });
+    new maplibregl.Marker({ element: el, anchor: 'left', offset: [-7, 0] }).setLngLat([p.lon, p.lat]).setPopup(pop).addTo(map);
+  }
+  const lab = () => $('map').classList.toggle('labels', map.getZoom() >= 14.5);
+  map.on('zoom', lab); lab();
+  restyle();
+  let once = false; const first = () => { if (once) return; once = true; fromHash(); };
+  map.once('idle', first); setTimeout(first, 2500);
+});
+for (const ev of ['dragstart', 'wheel', 'touchstart']) map.on(ev, () => { if (S.playing) pause(); });
+
+function restyle() {
+  if (!map.getLayer('leg-osm')) return;
+  const vis = FILTER === 'All' ? ['literal', true] : ['==', ['get', 'grade'], FILTER];
+  for (const k of ['osm', 'scout', 'img']) {
+    const isSel = ['==', ['get', 'tid'], SEL || ''];
+    const op = ['case', vis, SEL ? ['case', isSel, 1, 0.22] : 0.95, 0];
+    map.setPaintProperty('leg-' + k, 'line-opacity', op);
+    map.setPaintProperty('case-' + k, 'line-opacity', ['case', vis, SEL ? ['case', isSel, 0.9, 0.12] : 0.75, 0]);
+    map.setPaintProperty('leg-' + k, 'line-width', ['case', isSel, 6, 4]);
+    map.setPaintProperty('case-' + k, 'line-width', ['case', isSel, 9.5, 7]);
+  }
+}
+
+// ---- sidebar
+$('subtitle').textContent = `Kalimpong. ${DATA.trails.length} circuits within ${DATA.radius_km} km of the Durpin roundabout.`;
+for (const g of ['All', 'Easy', 'Moderate', 'Strenuous', 'Expedition']) {
+  const b = document.createElement('button'); b.textContent = g; if (g === 'All') b.className = 'on';
+  b.onclick = () => { FILTER = g; [...$('chips').children].forEach((c) => c.classList.toggle('on', c === b)); cards(); restyle(); };
+  $('chips').appendChild(b);
+}
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+function cards() {
+  const box = $('cards'); box.innerHTML = '';
+  for (const t of DATA.trails) {
+    if (FILTER !== 'All' && t.grade !== FILTER) continue;
+    const c = document.createElement('div'); c.className = 'card' + (t.id === SEL ? ' sel' : ''); c.dataset.id = t.id;
+    c.innerHTML = `<h3><span class="sw" style="background:${t.color}"></span><span><span class="id">${t.id}</span> ${esc(t.name)}</span></h3>
+      <div class="theme">${esc(t.theme)}</div>
+      <div class="stats"><span><b>${t.km.toFixed(1)}</b> km</span><span><b>+${t.up}</b> / -${t.down} m</span><span><b>${t.hours}</b> h</span><span class="g ${t.grade}">${t.grade}</span><span>${esc(t.shape)}</span></div>
+      <div class="bar"><i class="o" style="width:${t.share.osm}%"></i><i class="m" style="width:${t.share.img}%"></i><i class="s" style="width:${t.share.scout}%"></i></div>
+      <div class="barkey">${t.share.osm}% mapped, ${t.share.img}% seen on imagery, ${t.share.scout}% scout line</div>
+      <div class="more"><div>${esc(t.story)}</div>
+        <div class="lab">Highlights</div><ul>${t.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>
+        <div class="caution">${esc(t.caution)}</div>
+        <div><span class="lab">Best time</span><br>${esc(t.best)}</div>
+        <div class="lab">Stops, lowest ${t.min} m, highest ${t.max} m</div><ol>${t.stopsByD.map((s) => `<li>${esc(s.name)} <span class="id">${s.elev} m, ${(s.d / 1000).toFixed(1)} km</span></li>`).join('')}</ol>
+        <div class="row"><button class="primary" data-a="aerial">Aerial fly-through</button><button class="primary" data-a="walk">Walk-through</button></div>
+        <div class="row"><button data-a="pause">Pause</button><button data-a="stop">Stop</button>
+          <select data-a="speed"><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option></select>
+          <button data-a="gpx">Download GPX</button></div></div>`;
+    c.onclick = (e) => {
+      const a = e.target.dataset.a;
+      if (!a) { if (SEL !== t.id) select(t.id); return; }
+      if (a === 'aerial' || a === 'walk') { S.tour = false; play(a); }
+      else if (a === 'pause') (S.playing ? pause() : resume());
+      else if (a === 'stop') stop(true);
+      else if (a === 'gpx') gpx(t);
+    };
+    c.querySelector('select').onchange = (e) => { S.speed = +e.target.value; };
+    c.querySelector('select').value = String(S.speed);
+    box.appendChild(c);
+  }
+}
+cards();
+$('toggle').onclick = () => { const c = document.body.classList.toggle('collapsed'); $('toggle').textContent = c ? 'Show panel' : 'Hide panel'; setTimeout(() => { map.resize(); drawProfile(); }, 60); };
+$('showall').onclick = () => select(null);
+$('tour').onclick = () => { S.tour = true; S.speed = Math.max(S.speed, 2); select(DATA.trails[0].id, true); play('aerial'); };
+$('b3d').onclick = () => { const flat = map.getPitch() > 5; map.easeTo({ pitch: flat ? 0 : 60, bearing: flat ? 0 : -20, duration: 800 }); $('b3d').textContent = flat ? '3D view' : '2D view'; };
+$('bbase').onclick = () => { const topo = map.getLayoutProperty('topo', 'visibility') === 'visible'; map.setLayoutProperty('topo', 'visibility', topo ? 'none' : 'visible'); $('bbase').textContent = topo ? 'Topo map' : 'Satellite'; };
+
+// Frame a whole trail in 3D. fitBounds assumes sea-level ground, which on a 1,400 m ridge pushes the
+// trail off screen, so the camera is placed from the trail's real elevation instead.
+function overview(t, duration) {
+  const b = bounds(t), c = b.getCenter(), sw = b.getSouthWest(), ne = b.getNorthEast();
+  const diag = hav({ lat: sw.lat, lng: sw.lng }, { lat: ne.lat, lng: ne.lng }), elev = (t.min + t.max) / 2;
+  const D = Math.max(1100, diag * (mobile() ? 2.6 : 1.55)), pitch = 55 * rad, brg = -20 * rad, h = D * Math.sin(pitch);
+  const cam = new maplibregl.LngLat(c.lng - h * Math.sin(brg) / (111320 * Math.cos(c.lat * rad)), c.lat - h * Math.cos(brg) / 110570);
+  const o = map.calculateCameraOptionsFromTo(cam, elev + D * Math.cos(pitch), c, elev);
+  map.setPadding({ top: mobile() ? 40 : 0, bottom: mobile() ? 110 : 150, left: 0, right: 0 });
+  tweenTo(o, duration);
+}
+// easeTo ignores the camera elevation, so tween with jumpTo, which honours it
+let TWEEN = 0;
+function tweenTo(o, duration) {
+  const id = ++TWEEN, c0 = map.getCenter(), z0 = map.getZoom(), b0 = map.getBearing(), p0 = map.getPitch(), e0 = map.transform.elevation || o.elevation;
+  const c1 = maplibregl.LngLat.convert(o.center), db = ((o.bearing - b0 + 540) % 360) - 180, t0 = performance.now();
+  clampGround(false);
+  const step = (now) => {
+    if (id !== TWEEN) return;
+    const u = reduced || !duration ? 1 : Math.min(1, (now - t0) / duration), k = u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u), L = (a, b) => a + (b - a) * k;
+    map.jumpTo({ center: [L(c0.lng, c1.lng), L(c0.lat, c1.lat)], zoom: L(z0, o.zoom), bearing: b0 + db * k, pitch: L(p0, o.pitch), elevation: L(e0, o.elevation) });
+    if (u < 1) requestAnimationFrame(step); else if (!S.mode) clampGround(true);
+  };
+  requestAnimationFrame(step);
+}
+function bounds(t) { const b = new maplibregl.LngLatBounds(); t.track.forEach((p) => b.extend([p.lng, p.lat])); return b; }
+function select(id, quiet) {
+  stop(false);
+  SEL = id; cards(); restyle();
+  $('profile').style.display = id ? 'block' : 'none';
+  if (!quiet) history.replaceState(null, '', id ? '#t=' + id : '#all');
+  if (id) {
+    const el = document.querySelector(`.card[data-id="${id}"]`); if (el) el.scrollIntoView({ block: 'nearest' });
+    if (!quiet) overview(trail(id), 1400);
+    drawProfile();
+  } else if (!quiet) map.easeTo({ center: [DATA.center[1], DATA.center[0]], zoom: 13.6, pitch: 55, bearing: -20, duration: 1200, padding: { top: 0, bottom: 0, left: 0, right: 0 } }), TWEEN++, clampGround(true);
+}
+
+// ---- fly-through and walk-through
+const MODES = {
+  aerial: { v: 55, back: 620, up: 430, ahead: 120, tup: 0, tau: 0.6, label: 'Aerial fly-through' },
+  walk: { v: 9, back: 30, up: 12, ahead: 170, tup: 8, tau: 0.35, label: 'Walk-through' },
+};
+function pose(t, mode, s) {
+  const m = MODES[mode], c = at(t, s - m.back), g = at(t, s + m.ahead), here = at(t, Math.min(Math.max(s, 0), t.total));
+  // keep the camera above every bit of ground between it and the walker
+  let top = Math.max(c.ele, here.ele);
+  if (mode === 'walk') for (let k = 1; k < 4; k++) top = Math.max(top, at(t, Math.max(0, s - m.back * k / 4)).ele);
+  return { cam: { lng: c.lng, lat: c.lat, alt: top + m.up }, tgt: { lng: g.lng, lat: g.lat, alt: g.ele + m.tup } };
+}
+function applyPose(p) {
+  const o = map.calculateCameraOptionsFromTo(new maplibregl.LngLat(p.cam.lng, p.cam.lat), p.cam.alt, new maplibregl.LngLat(p.tgt.lng, p.tgt.lat), p.tgt.alt);
+  map.jumpTo(o);
+}
+function clampGround(on) { if (map.setCenterClampedToGround) map.setCenterClampedToGround(on); }
+function hud(t) {
+  const p = at(t, Math.min(Math.max(S.s, 0.01), t.total - 0.01));
+  const next = t.stopsByD.find((x) => x.d > S.s + 5);
+  $('hud').style.display = 'block';
+  $('hud').innerHTML = `<b>${t.id} ${esc(t.name)}</b> &middot; ${MODES[S.mode].label}${S.playing ? '' : ' (paused)'}<br>${(S.s / 1000).toFixed(2)} of ${(t.total / 1000).toFixed(2)} km &middot; ${Math.round(p.ele)} m &middot; <span class="k ${p.kind}">${KIND[p.kind]}</span>${next ? ' &middot; next: ' + esc(next.name) : ''}`;
+  dot.setLngLat([p.lng, p.lat]).addTo(map);
+  dot.getElement().style.borderColor = t.color === '#ffffff' ? '#1f6feb' : t.color;
+  drawProfile(S.s);
+}
+function frame(now) {
+  if (!S.playing) return;
+  const t = trail(SEL), m = MODES[S.mode];
+  const dt = Math.min(0.1, (now - S.last) / 1000) || 0.016; S.last = now;
+  S.s += m.v * S.speed * dt;
+  if (S.s >= t.total) { S.s = t.total; finish(); return; }
+  const p = pose(t, S.mode, S.s), a = 1 - Math.exp(-dt / m.tau);
+  for (const k of ['cam', 'tgt']) for (const f of ['lng', 'lat', 'alt']) S[k][f] += (p[k][f] - S[k][f]) * a;
+  applyPose(S); hud(t);
+  S.raf = requestAnimationFrame(frame);
+}
+function stepReduced() {   // reduced motion: jump in 2 s steps instead of animating
+  if (!S.playing) return;
+  const t = trail(SEL); S.s = Math.min(t.total, S.s + t.total / 12);
+  const p = pose(t, S.mode, S.s); S.cam = p.cam; S.tgt = p.tgt; applyPose(S); hud(t);
+  if (S.s >= t.total) finish(); else setTimeout(stepReduced, 2000);
+}
+function begin() {
+  const t = trail(SEL); const p = pose(t, S.mode, S.s); S.cam = p.cam; S.tgt = p.tgt;
+  TWEEN++; S.playing = true; S.last = performance.now(); clampGround(false); applyPose(S); hud(t); syncButtons();
+  if (reduced) setTimeout(stepReduced, 2000); else S.raf = requestAnimationFrame(frame);
+}
+function play(mode) {
+  if (!SEL) return;
+  cancelAnimationFrame(S.raf); S.mode = mode; S.s = 0; S.playing = false;
+  const t = trail(SEL);
+  overview(t, 600);
+  let started = false; const go = () => { if (started || S.mode !== mode || SEL !== t.id) return; started = true; begin(); };
+  map.once('idle', go); setTimeout(go, 4000);   // let terrain tiles arrive first
+}
+function pause() { S.playing = false; cancelAnimationFrame(S.raf); if (SEL && S.mode) hud(trail(SEL)); syncButtons(); }
+function resume() { if (SEL && S.mode && !S.playing) begin(); }
+const overviewFn = overview;
+function stop(overview) {
+  cancelAnimationFrame(S.raf); const was = S.mode; S.playing = false; S.mode = null; S.s = 0;
+  $('hud').style.display = 'none'; dot.remove(); if (!(overview && was && SEL)) clampGround(true); syncButtons();
+  if (overview && was && SEL) window.setTimeout(() => overviewFn(trail(SEL), 1200), 0);
+  if (SEL) drawProfile();
+}
+function finish() {
+  const i = DATA.trails.findIndex((t) => t.id === SEL);
+  if (S.tour && i < DATA.trails.length - 1) { select(DATA.trails[i + 1].id, true); S.tour = true; play('aerial'); return; }
+  S.tour = false; stop(true);
+}
+function syncButtons() { document.querySelectorAll('[data-a="pause"]').forEach((b) => b.textContent = S.mode && !S.playing ? 'Resume' : 'Pause'); }
+
+// ---- elevation profile
+const cv = document.querySelector('#profile canvas'), cx = cv.getContext('2d');
+const PM = { l: 44, r: 12, t: 26, b: 22 };
+function drawProfile(cursor) {
+  if (!SEL || $('profile').style.display === 'none') return;
+  const t = trail(SEL), dpr = devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (!W) return;
+  cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, W, H);
+  const lo = Math.floor((t.min - 15) / 50) * 50, hi = Math.ceil((t.max + 15) / 50) * 50;
+  const X = (d) => PM.l + d / t.total * (W - PM.l - PM.r), Y = (e) => H - PM.b - (e - lo) / (hi - lo) * (H - PM.t - PM.b);
+  cx.font = '11px "Avenir Next","Segoe UI",system-ui,sans-serif'; cx.fillStyle = '#5b6878'; cx.strokeStyle = '#e3e0d6'; cx.lineWidth = 1;
+  const stepE = (hi - lo) > 500 ? 200 : (hi - lo) > 200 ? 100 : 50;
+  for (let e = lo; e <= hi; e += stepE) { cx.beginPath(); cx.moveTo(PM.l, Y(e)); cx.lineTo(W - PM.r, Y(e)); cx.stroke(); cx.fillText(e + ' m', 4, Y(e) + 4); }
+  const stepD = t.total > 12000 ? 2000 : t.total > 5000 ? 1000 : 500;
+  for (let d = 0; d <= t.total; d += stepD) cx.fillText((d / 1000) + ' km', X(d) - 8, H - 6);
+  cx.beginPath(); cx.moveTo(X(0), Y(lo)); t.track.forEach((p) => cx.lineTo(X(p.d), Y(p.ele))); cx.lineTo(X(t.total), Y(lo)); cx.closePath();
+  cx.fillStyle = 'rgba(31,111,235,.12)'; cx.fill();
+  const style = { osm: ['#16212E', []], img: ['#d6336c', [1, 5]], scout: ['#f0a500', [7, 5]] };
+  let i = 0;
+  while (i < t.track.length - 1) {
+    const li = t.track[i + 1].li, k = t.track[i + 1].kind; cx.beginPath(); cx.moveTo(X(t.track[i].d), Y(t.track[i].ele));
+    while (i < t.track.length - 1 && t.track[i + 1].li === li) { i++; cx.lineTo(X(t.track[i].d), Y(t.track[i].ele)); }
+    cx.strokeStyle = style[k][0]; cx.setLineDash(style[k][1]); cx.lineWidth = 2.5; cx.lineCap = k === 'img' ? 'round' : 'butt'; cx.stroke();
+  }
+  cx.setLineDash([]); cx.fillStyle = '#16212E';
+  let lastX = -99;
+  t.stopsByD.forEach((s) => { const x = X(s.d); cx.fillRect(x - 0.5, PM.t - 6, 1, 6); const nm = s.name.length > 18 ? s.name.slice(0, 17) + '.' : s.name, tx = Math.min(x - 4, W - PM.r - cx.measureText(nm).width); if (tx > lastX + 8) { cx.fillText(nm, tx, 12); lastX = tx + cx.measureText(nm).width; } });
+  if (cursor != null) { cx.strokeStyle = '#1f6feb'; cx.lineWidth = 1.5; cx.beginPath(); cx.moveTo(X(cursor), PM.t); cx.lineTo(X(cursor), H - PM.b); cx.stroke(); }
+  cv._X0 = PM.l; cv._X1 = W - PM.r;
+}
+function profileAt(e) {
+  if (!SEL) return; const t = trail(SEL), r = cv.getBoundingClientRect();
+  const d = Math.min(1, Math.max(0, (e.clientX - r.left - cv._X0) / (cv._X1 - cv._X0))) * t.total, p = at(t, Math.min(Math.max(d, 0.01), t.total - 0.01));
+  if (!S.playing) { dot.setLngLat([p.lng, p.lat]).addTo(map); drawProfile(d); }
+  $('ptip').textContent = `${(d / 1000).toFixed(2)} km, ${Math.round(p.ele)} m, slope ${Math.round((p.grade || 0) * 100)}%, ${KIND[p.kind]}`;
+}
+cv.addEventListener('pointermove', profileAt); cv.addEventListener('pointerdown', profileAt);
+cv.addEventListener('pointerleave', () => { if (!S.mode) { dot.remove(); drawProfile(); } });
+addEventListener('resize', () => drawProfile());
+
+// ---- GPX
+function gpx(t) {
+  const x = (s) => esc(s).replace(/'/g, '&apos;');
+  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="kalimpong-trails" xmlns="http://www.topografix.com/GPX/1/1">\n`
+    + t.stops.map((s) => `<wpt lat="${s.lat}" lon="${s.lon}"><ele>${s.elev}</ele><name>${x(s.name)}</name></wpt>`).join('\n')
+    + `\n<trk><name>${x(t.id + ' ' + t.name)}</name><trkseg>\n` + t.track.map((p) => `<trkpt lat="${p.lat}" lon="${p.lng}"><ele>${p.ele}</ele></trkpt>`).join('\n') + '\n</trkseg></trk></gpx>';
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type: 'application/gpx+xml' }));
+  a.download = `${t.id}-${t.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.gpx`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+// ---- deep links: #t=T03  |  #t=T03&mode=walk&p=0.35 (paused at 35 %)  |  #all
+function fromHash() {
+  const q = new URLSearchParams(location.hash.slice(1)), id = q.get('t');
+  if (!id || !trail(id)) return;
+  const mode = q.get('mode');
+  if (!MODES[mode]) { select(id); return; }
+  select(id, true); const t = trail(id);
+  TWEEN++; S.mode = mode; S.s = Math.min(1, Math.max(0, +q.get('p') || 0)) * t.total; S.playing = false;
+  const p = pose(t, mode, S.s); S.cam = p.cam; S.tgt = p.tgt; clampGround(false); applyPose(S); hud(t); syncButtons();
+}
+addEventListener('hashchange', fromHash);
+window.__state = () => ({ selected: SEL, mode: S.mode, progress: SEL && S.mode ? S.s / trail(SEL).total : 0, playing: S.playing, trails: DATA.trails.length, layers: map.getStyle().layers.length, loaded: map.loaded(), errs: __ERRS.length, pitch: map.getPitch(), zoom: map.getZoom() });
+</script>
+</body>
+</html>
