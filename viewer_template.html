@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Durpin Dara Nature Walks</title>
+<meta property="og:title" content="Durpin Dara Nature Walks, Kalimpong">
+<meta property="og:description" content="13 walking circuits from Div Chowk on a 3D satellite map. Fly over them, walk through them, and tell us what you think.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dtensor.github.io/kalimpong-trails/">
 <style>/*__MAPLIBRE_CSS__*/</style>
 <style>
 :root{--paper:#fdfcf8;--ink:#16212E;--mute:#5b6878;--line:#e3e0d6;--blue:#1f6feb;--amber:#fff4d6;--amberline:#e2b93b}
@@ -61,6 +65,8 @@ body.collapsed #hud{left:50%}
 .dot{width:18px;height:18px;border-radius:50%;background:#fff;border:5px solid #1f6feb;box-shadow:0 0 0 2px rgba(0,0,0,.5)}
 .maplibregl-popup-content{font-family:inherit;font-size:13px;color:var(--ink);background:var(--paper);border-radius:8px;max-width:260px}
 .maplibregl-popup-content a{color:var(--blue);display:block;margin-top:4px}
+.cbtn{display:block;text-align:center;margin:10px 0 4px;padding:10px 12px;border-radius:8px;background:#1f6f43;color:#fff;font-weight:600;font-size:14px;text-decoration:none}
+.cbtn:hover{background:#18593a}
 .mapbtns{position:fixed;right:12px;top:150px;z-index:4;display:flex;flex-direction:column;gap:6px}
 @media (max-width:760px){
   #side{top:auto;right:0;width:auto;height:45vh;border-right:0;border-top:1px solid var(--line)}
@@ -79,6 +85,7 @@ body.collapsed #hud{left:50%}
 <div id="side">
   <h1>Durpin Dara Nature Walks</h1>
   <p class="sub" id="subtitle"></p>
+  <a class="cbtn" href="https://github.com/Dtensor/kalimpong-trails/issues/new?template=trail-comment.yml" target="_blank" rel="noopener">Leave a comment on a trail</a>
   <div class="legend">
     <div><svg width="46" height="8"><line x1="0" y1="4" x2="46" y2="4" stroke="#16212E" stroke-width="4"/></svg>Mapped path or road (OpenStreetMap)</div>
     <div><svg width="46" height="8"><line x1="2" y1="4" x2="46" y2="4" stroke="#d6336c" stroke-width="4" stroke-dasharray="0.1 7" stroke-linecap="round"/></svg>Seen on satellite imagery</div>
@@ -219,7 +226,7 @@ function restyle() {
 }
 
 // ---- sidebar
-$('subtitle').textContent = `Kalimpong. ${DATA.trails.length} circuits within ${DATA.radius_km} km of the Durpin roundabout.`;
+$('subtitle').textContent = `Kalimpong. ${DATA.trails.length} circuits within ${DATA.radius_km} km of Div Chowk, Durpin Dara.`;
 for (const g of ['All', 'Easy', 'Moderate', 'Strenuous', 'Expedition']) {
   const b = document.createElement('button'); b.textContent = g; if (g === 'All') b.className = 'on';
   b.onclick = () => { FILTER = g; [...$('chips').children].forEach((c) => c.classList.toggle('on', c === b)); cards(); restyle(); };
